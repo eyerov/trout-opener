@@ -242,7 +242,10 @@ class RosLaunchApp(QWidget):
             self.update_app_button_text(package_name, launch_file_name, is_running=False)
 
     def update_button_text(self, package_name, launch_file_name, name, is_running):
-        button = self.buttons_payload.get(f'Start {name}')
+        launch_file_path = f"{package_name} {launch_file_name}"
+        button_key = f'Start {name}'
+
+        button = self.buttons_payload.get(button_key)
 
         if button:
             if is_running:
@@ -250,15 +253,23 @@ class RosLaunchApp(QWidget):
             else:
                 button.setText(f'Start {name}')
 
+            # Update the dictionary key with the correct button text
+            self.buttons_payload[button_key] = button
+
     def update_app_button_text(self, package_name, launch_file_name, is_running):
-        index = self.app_launches.index((package_name, launch_file_name))
-        button = self.buttons_main.get(f'Start {package_name}')
+        button_key = f'Start {package_name}'
+
+        button = self.buttons_main.get(button_key)
 
         if button:
             if is_running:
                 button.setText(f'Stop {package_name}')
             else:
                 button.setText(f'Start {package_name}')
+
+            # Update the dictionary key with the correct button text
+            self.buttons_main[button_key] = button
+
     def closeEvent(self, event):
         # Override the closeEvent method to stop roscore when the application is closed
         self.stop_roscore()
