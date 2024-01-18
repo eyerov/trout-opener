@@ -1,10 +1,13 @@
 import sys
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, QHBoxLayout, QSystemTrayIcon
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, \
+    QHBoxLayout, QSystemTrayIcon, QTabWidget
+
 from PyQt5.QtGui import QIcon
 
 import subprocess
 import psutil
 import webbrowser
+
 
 class RosLaunchApp(QWidget):
     def __init__(self):
@@ -17,27 +20,25 @@ class RosLaunchApp(QWidget):
 
         # Define launch file information as a list of tuples (package_name, launch_file_name)
         self.launch_files = [
-            ('mavros', 'apm.launch fcu_url:=udp://:14555@'),
-            ('rosbridge_server', 'rosbridge_websocket.launch'),
-            ('joystick_controller', 'joystick_controller.launch'),
-            ('usbl_ros', 'usbl_ros.launch'),
-            ('ut_data_extractor', 'ut_probe.launch'),
-            ('external_temp', 'external_mavros.launch'),
-            ('uwrov', 'sonar.launch'),
-            ('map_downloader', 'map_downloader.launch'),
-            ('oven_media_recoder', 'recorder.launch'),
-            ('notification_sender', 'notification_sender.launch'),
-            ('heading_depth_sender', 'sender.launch'),
-            ('waterlinked_a50_ros_driver', 'launch_dvl.launch'),
+            ('uwrov', 'rov.launch', 'ROV'),
+            ('joystick_controller', 'joystick_controller.launch', 'Joystick'),
+            ('reach_alpha', 'reach_alpha.launch', 'Master Arm'),
+            ('waterlinked_a50_ros_driver', 'launch_dvl.launch', 'DVL'),
+            ('usbl_ros', 'usbl_ros.launch', 'USBL'),
+            ('ut_data_extractor', 'ut_probe.launch', 'UT Probe'),
+            ('uwrov', 'sonar.launch', 'Sonar'),
+            ('oven_media_recoder', 'recorder.launch', 'Camera'),
+            ('heading_depth_sender', 'sender.launch', 'Auto Mode'),
+            ('open_cpn_connector', 'open_cpn_connector.launch', 'OpenCPN'),
         ]
 
         self.app_launches = [
-            ('Joystick_Configurator', 'joystick.sh'),
-            ('Main_App', 'ichub.sh'),
+            ('Joystick Configurator', 'joystick.sh'),
+            ('IControl Hub', 'ichub.sh'),
         ]
 
         self.init_ui()
-    
+
     def start_roscore(self):
         # Start roscore if it's not already running
         try:
@@ -59,42 +60,60 @@ class RosLaunchApp(QWidget):
                 print(f"Error stopping roscore: {e}")
 
     def init_ui(self):
+        tab_widget = QTabWidget()
+
         # Create a single button to start/stop all ROS nodes
-        self.toggle_all_button = QPushButton('Start All Nodes', self)
+        self.toggle_all_button = QPushButton('Start ROV', self)
         self.toggle_all_button.clicked.connect(self.toggle_all_ros_nodes)
 
-        layout = QVBoxLayout()
+        main_layout = QVBoxLayout()
+        payload_layout = QVBoxLayout()
 
-        layout.addWidget(self.toggle_all_button)
 
-        for i, (package_name, launch_file_name) in enumerate(self.launch_files):
+        main_layout.addWidget(self.toggle_all_button)
+
+        for i, (package_name, launch_file_name, name) in enumerate(self.launch_files):
             h_box = QHBoxLayout()
-            name_label = QLabel(package_name)
-            action_button = QPushButton(f'Start ROS Launch {i + 1}', self)
-            action_button.clicked.connect(lambda _, package=package_name, launch=launch_file_name: self.toggle_ros_launch(package, launch))
+            # name_label = QLabel(name)
+            action_button = QPushButton(f'Start {name }', self)
+            action_button.clicked.connect(
+                lambda _, package=package_name, launch=launch_file_name: self.toggle_ros_launch(package, launch, name))
 
-            h_box.addWidget(name_label)
+            # h_box.addWidget(name_label)
             h_box.addWidget(action_button)
 
-            layout.addLayout(h_box)
-            self.buttons[f'Start ROS Launch {i + 1}'] = action_button
-        
-        label = QLabel("Apps:")
+            payload_layout.addLayout(h_box)
+            self.buttons[f'Start {name}'] = action_button
 
-        layout.addWidget(label)
+        # label = QLabel("Apps:")
+        #
+        # layout.addWidget(label)
 
         for i, (package_name, launch_file_name) in enumerate(self.app_launches):
             h_box = QHBoxLayout()
-            name_label = QLabel(package_name)
-            action_button = QPushButton(f'Start App {i + 1}', self)
-            action_button.clicked.connect(lambda _, package=package_name, launch=launch_file_name: self.toggle_app_launch(package, launch))
+            # name_label = QLabel(package_name)
+            action_button = QPushButton(f'Start {package_name }', self)
+            action_button.clicked.connect(
+                lambda _, package=package_name, launch=launch_file_name: self.toggle_app_launch(package, launch))
 
-            h_box.addWidget(name_label)
+            # h_box.addWidget(name_label)
             h_box.addWidget(action_button)
-            layout.addLayout(h_box)
-            self.buttons[f'Start App {i + 1}'] = action_button
+            main_layout.addLayout(h_box)
+            self.buttons[f'Start {package_name }'] = action_button
 
-        self.setLayout(layout)
+        # Add tabs and insert the buttons into the tabs
+        tab_widget.addTab(QWidget(), 'Main')  # Add the main tab
+        tab_widget.addTab(QWidget(), 'Payloads')  # Add additional tabs
+        # tab_widget.addTab(QWidget(), 'Tab 2')
+
+        # Set the layout of the main tab
+        tab_widget.widget(0).setLayout(main_layout)
+        tab_widget.widget(1).setLayout(payload_layout)
+
+        main_layout = QVBoxLayout()
+        main_layout.addWidget(tab_widget)  # Add the tab widget to the main layout
+
+        self.setLayout(main_layout)  # Set the main widget layout
         self.setWindowTitle('EyeROV Trout Opener')
 
         icon_path = 'icon.png'
@@ -106,26 +125,26 @@ class RosLaunchApp(QWidget):
         self.show()
 
     def toggle_all_ros_nodes(self):
-        if self.toggle_all_button.text() == 'Start All Nodes':
+        if self.toggle_all_button.text() == 'Start ROV':
             # If the button text is 'Start All Nodes', start all nodes
-            for package_name, launch_file_name in self.launch_files:
-                self.start_ros_launch(package_name, launch_file_name)
-            self.toggle_all_button.setText('Stop All Nodes')
+            for package_name, launch_file_name, name in self.launch_files:
+                self.start_ros_launch(package_name, launch_file_name, name)
+            self.toggle_all_button.setText('Stop ROV')
         else:
             # If the button text is 'Stop All Nodes', stop all nodes
-            for package_name, launch_file_name in self.launch_files:
-                self.stop_ros_launch(package_name, launch_file_name)
-            self.toggle_all_button.setText('Start All Nodes')
+            for package_name, launch_file_name, name in self.launch_files:
+                self.stop_ros_launch(package_name, launch_file_name, name)
+            self.toggle_all_button.setText('Start ROV')
 
-    def toggle_ros_launch(self, package_name, launch_file_name):
+    def toggle_ros_launch(self, package_name, launch_file_name, name):
         launch_file_path = f"{package_name} {launch_file_name}"
 
         if launch_file_path in self.launch_processes and self.launch_processes[launch_file_path].poll() is None:
             # If the process is running, stop it
-            self.stop_ros_launch(package_name, launch_file_name)
+            self.stop_ros_launch(package_name, launch_file_name, name)
         else:
             # If the process is not running, start it
-            self.start_ros_launch(package_name, launch_file_name)
+            self.start_ros_launch(package_name, launch_file_name, name)
 
     def toggle_app_launch(self, package_name, launch_file_name):
         launch_file_path = f"{launch_file_name}"
@@ -137,7 +156,7 @@ class RosLaunchApp(QWidget):
             # If the process is not running, start it
             self.start_app_launch(package_name, launch_file_name)
 
-    def start_ros_launch(self, package_name, launch_file_name):
+    def start_ros_launch(self, package_name, launch_file_name, name):
         launch_file_path = f"{package_name} {launch_file_name}"
 
         print(f"Starting : {launch_file_path}")
@@ -153,7 +172,7 @@ class RosLaunchApp(QWidget):
         try:
             process = subprocess.Popen(roslaunch_cmd, shell=True)
             self.launch_processes[launch_file_path] = process
-            self.update_button_text(package_name, launch_file_name, is_running=True)
+            self.update_button_text(package_name, launch_file_name, name, is_running=True)
         except Exception as e:
             print(f"Error starting ROS Launch file {launch_file_path}: {e}")
 
@@ -179,7 +198,7 @@ class RosLaunchApp(QWidget):
         except Exception as e:
             print(f"Error starting App file {launch_file_path}: {e}")
 
-    def stop_ros_launch(self, package_name, launch_file_name):
+    def stop_ros_launch(self, package_name, launch_file_name, name):
         launch_file_path = f"{package_name} {launch_file_name}"
 
         if launch_file_path in self.launch_processes and self.launch_processes[launch_file_path].poll() is None:
@@ -198,7 +217,7 @@ class RosLaunchApp(QWidget):
             except Exception as e:
                 print(f"Error stopping ROS Launch file {launch_file_path}: {e}")
 
-            self.update_button_text(package_name, launch_file_name, is_running=False)
+            self.update_button_text(package_name, launch_file_name,name, is_running=False)
 
     def stop_app_launch(self, package_name, launch_file_name):
         launch_file_path = f"{launch_file_name}"
@@ -221,25 +240,24 @@ class RosLaunchApp(QWidget):
 
             self.update_app_button_text(package_name, launch_file_name, is_running=False)
 
-    def update_button_text(self, package_name, launch_file_name, is_running):
-        index = self.launch_files.index((package_name, launch_file_name))
-        button = self.buttons.get(f'Start ROS Launch {index + 1}')
+    def update_button_text(self, package_name, launch_file_name, name, is_running):
+        button = self.buttons.get(f'Start {name}')
 
         if button:
             if is_running:
-                button.setText(f'Stop ROS Launch {index + 1}')
+                button.setText(f'Stop {name}')
             else:
-                button.setText(f'Start ROS Launch {index + 1}')
+                button.setText(f'Start {name}')
 
     def update_app_button_text(self, package_name, launch_file_name, is_running):
         index = self.app_launches.index((package_name, launch_file_name))
-        button = self.buttons.get(f'Start App {index + 1}')
+        button = self.buttons.get(f'Start {package_name}')
 
         if button:
             if is_running:
-                button.setText(f'Stop App {index + 1}')
+                button.setText(f'Stop {package_name}')
             else:
-                button.setText(f'Start App {index + 1}')
+                button.setText(f'Start {package_name}')
     def closeEvent(self, event):
         # Override the closeEvent method to stop roscore when the application is closed
         self.stop_roscore()
