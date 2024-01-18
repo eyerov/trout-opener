@@ -241,9 +241,10 @@ class RosLaunchApp(QWidget):
 
             self.update_app_button_text(package_name, launch_file_name, is_running=False)
 
-    # Update the dictionary key with the correct button text
     def update_button_text(self, package_name, launch_file_name, name, is_running):
-        button_key = (package_name, launch_file_name, name)
+        launch_file_path = f"{package_name} {launch_file_name}"
+        button_key = f'Start {name}'
+
         button = self.buttons_payload.get(button_key)
 
         if button:
@@ -252,11 +253,12 @@ class RosLaunchApp(QWidget):
             else:
                 button.setText(f'Start {name}')
 
+            # Update the dictionary key with the correct button text
             self.buttons_payload[button_key] = button
 
-    # Update the dictionary key with the correct button text
     def update_app_button_text(self, package_name, launch_file_name, is_running):
-        button_key = (package_name, launch_file_name)
+        button_key = f'Start {package_name}'
+
         button = self.buttons_main.get(button_key)
 
         if button:
@@ -265,6 +267,7 @@ class RosLaunchApp(QWidget):
             else:
                 button.setText(f'Start {package_name}')
 
+            # Update the dictionary key with the correct button text
             self.buttons_main[button_key] = button
 
     def closeEvent(self, event):
