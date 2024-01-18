@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "trout_opener.py", line 81, in toggle_all_ros_nodes
+    self.stop_ros_launch(package_name, launch_file_name)
+  File "trout_opener.py", line 163, in stop_ros_launch
+    self.update_button_text(package_name, launch_file_name, is_running=False)
+  File "trout_opener.py", line 193, in update_button_text
+    button.setText(f'Start ROS Launch {index + 1}')
+AttributeError: 'NoneType' object has no attribute 'setText'
+
