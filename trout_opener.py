@@ -78,7 +78,7 @@ class RosLaunchApp(QWidget):
             # name_label = QLabel(name)
             action_button = QPushButton(f'Start {name}', self)
             action_button.clicked.connect(
-                lambda _, package=package_name, launch=launch_file_name: self.toggle_ros_launch(package, launch, name))
+                lambda _, package=package_name, launch=launch_file_name, l_name= name: self.toggle_ros_launch(package, launch, l_name))
 
             # h_box.addWidget(name_label)
             h_box.addWidget(action_button)
@@ -168,6 +168,7 @@ class RosLaunchApp(QWidget):
 
         # Construct the roslaunch command
         roslaunch_cmd = f"roslaunch {launch_file_path}"
+        print(f"Started button: {name}")
 
         # Use subprocess.Popen to start the roslaunch process and retrieve its PID
         try:
@@ -242,10 +243,13 @@ class RosLaunchApp(QWidget):
             self.update_app_button_text(package_name, launch_file_name, is_running=False)
 
     def update_button_text(self, package_name, launch_file_name, name, is_running):
+        print(name)
+
         launch_file_path = f"{package_name} {launch_file_name}"
         button_key = f'Start {name}'
 
         button = self.buttons_payload.get(button_key)
+        print(f"Button:{button.text()}")
 
         if button:
             if is_running:
