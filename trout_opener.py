@@ -13,6 +13,7 @@ class RosLaunchApp(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.toggle_all_button = None
         self.start_roscore()
 
         self.launch_processes = {}  # Dictionary to store process objects
@@ -70,13 +71,12 @@ class RosLaunchApp(QWidget):
         main_layout = QVBoxLayout()
         payload_layout = QVBoxLayout()
 
-
         main_layout.addWidget(self.toggle_all_button)
 
         for i, (package_name, launch_file_name, name) in enumerate(self.launch_files):
             h_box = QHBoxLayout()
             # name_label = QLabel(name)
-            action_button = QPushButton(f'Start {name }', self)
+            action_button = QPushButton(f'Start {name}', self)
             action_button.clicked.connect(
                 lambda _, package=package_name, launch=launch_file_name: self.toggle_ros_launch(package, launch, name))
 
@@ -93,14 +93,14 @@ class RosLaunchApp(QWidget):
         for i, (package_name, launch_file_name) in enumerate(self.app_launches):
             h_box = QHBoxLayout()
             # name_label = QLabel(package_name)
-            action_button = QPushButton(f'Start {package_name }', self)
+            action_button = QPushButton(f'Start {package_name}', self)
             action_button.clicked.connect(
                 lambda _, package=package_name, launch=launch_file_name: self.toggle_app_launch(package, launch))
 
             # h_box.addWidget(name_label)
             h_box.addWidget(action_button)
             main_layout.addLayout(h_box)
-            self.buttons_main[f'Start {package_name }'] = action_button
+            self.buttons_main[f'Start {package_name}'] = action_button
 
         # Add tabs and insert the buttons into the tabs
         tab_widget.addTab(QWidget(), 'Main')  # Add the main tab
@@ -241,10 +241,9 @@ class RosLaunchApp(QWidget):
 
             self.update_app_button_text(package_name, launch_file_name, is_running=False)
 
+    # Update the dictionary key with the correct button text
     def update_button_text(self, package_name, launch_file_name, name, is_running):
-        launch_file_path = f"{package_name} {launch_file_name}"
-        button_key = f'Start {name}'
-
+        button_key = (package_name, launch_file_name, name)
         button = self.buttons_payload.get(button_key)
 
         if button:
@@ -253,12 +252,11 @@ class RosLaunchApp(QWidget):
             else:
                 button.setText(f'Start {name}')
 
-            # Update the dictionary key with the correct button text
             self.buttons_payload[button_key] = button
 
+    # Update the dictionary key with the correct button text
     def update_app_button_text(self, package_name, launch_file_name, is_running):
-        button_key = f'Start {package_name}'
-
+        button_key = (package_name, launch_file_name)
         button = self.buttons_main.get(button_key)
 
         if button:
@@ -267,13 +265,13 @@ class RosLaunchApp(QWidget):
             else:
                 button.setText(f'Start {package_name}')
 
-            # Update the dictionary key with the correct button text
             self.buttons_main[button_key] = button
 
     def closeEvent(self, event):
         # Override the closeEvent method to stop roscore when the application is closed
         self.stop_roscore()
         event.accept()
+
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
