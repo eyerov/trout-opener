@@ -21,7 +21,7 @@ class RosLaunchApp(QWidget):
 
         # Define launch file information as a list of tuples (package_name, launch_file_name)
         self.launch_files = [
-            ('uwrov', 'rov.launch', 'ROV'),
+            ('uwrov', 'rov.launch', 'Main Connection'),
             ('joystick_controller', 'joystick_controller.launch', 'Joystick'),
             ('reach_alpha', 'reach_alpha.launch', 'Master Arm'),
             ('waterlinked_a50_ros_driver', 'launch_dvl.launch', 'DVL'),
