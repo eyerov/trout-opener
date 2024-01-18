@@ -16,7 +16,8 @@ class RosLaunchApp(QWidget):
         self.start_roscore()
 
         self.launch_processes = {}  # Dictionary to store process objects
-        self.buttons = {}  # Dictionary to store buttons
+        self.buttons_main = {}  # Dictionary to store buttons
+        self.buttons_payload = {}  # Dictionary to store buttons
 
         # Define launch file information as a list of tuples (package_name, launch_file_name)
         self.launch_files = [
@@ -83,7 +84,7 @@ class RosLaunchApp(QWidget):
             h_box.addWidget(action_button)
 
             payload_layout.addLayout(h_box)
-            self.buttons[f'Start {name}'] = action_button
+            self.buttons_payload[f'Start {name}'] = action_button
 
         # label = QLabel("Apps:")
         #
@@ -99,7 +100,7 @@ class RosLaunchApp(QWidget):
             # h_box.addWidget(name_label)
             h_box.addWidget(action_button)
             main_layout.addLayout(h_box)
-            self.buttons[f'Start {package_name }'] = action_button
+            self.buttons_main[f'Start {package_name }'] = action_button
 
         # Add tabs and insert the buttons into the tabs
         tab_widget.addTab(QWidget(), 'Main')  # Add the main tab
@@ -217,7 +218,7 @@ class RosLaunchApp(QWidget):
             except Exception as e:
                 print(f"Error stopping ROS Launch file {launch_file_path}: {e}")
 
-            self.update_button_text(package_name, launch_file_name,name, is_running=False)
+            self.update_button_text(package_name, launch_file_name, name, is_running=False)
 
     def stop_app_launch(self, package_name, launch_file_name):
         launch_file_path = f"{launch_file_name}"
@@ -241,7 +242,7 @@ class RosLaunchApp(QWidget):
             self.update_app_button_text(package_name, launch_file_name, is_running=False)
 
     def update_button_text(self, package_name, launch_file_name, name, is_running):
-        button = self.buttons.get(f'Start {name}')
+        button = self.buttons_payload.get(f'Start {name}')
 
         if button:
             if is_running:
@@ -251,7 +252,7 @@ class RosLaunchApp(QWidget):
 
     def update_app_button_text(self, package_name, launch_file_name, is_running):
         index = self.app_launches.index((package_name, launch_file_name))
-        button = self.buttons.get(f'Start {package_name}')
+        button = self.buttons_main.get(f'Start {package_name}')
 
         if button:
             if is_running:
