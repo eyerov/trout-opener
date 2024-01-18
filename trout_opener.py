@@ -194,7 +194,7 @@ class RosLaunchApp(QWidget):
             process = subprocess.Popen(roslaunch_cmd, shell=False)
             self.launch_processes[launch_file_path] = process
             self.update_app_button_text(package_name, launch_file_name, is_running=True)
-            if package_name == 'Main_App':
+            if package_name == 'IControl Hub':
                 webbrowser.open('http://localhost:5173')
         except Exception as e:
             print(f"Error starting App file {launch_file_path}: {e}")
