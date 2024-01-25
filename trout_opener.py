@@ -22,16 +22,16 @@ class RosLaunchApp(QWidget):
 
         # Define launch file information as a list of tuples (package_name, launch_file_name)
         self.launch_files = [
-            ('uwrov', 'rov.launch', 'Main Connection'),
-            ('joystick_controller', 'joystick_controller.launch', 'Joystick'),
-            ('reach_alpha', 'reach_alpha.launch', 'Master Arm'),
-            ('waterlinked_a50_ros_driver', 'launch_dvl.launch', 'DVL'),
-            ('usbl_ros', 'usbl_ros.launch', 'USBL'),
-            ('ut_data_extractor', 'ut_probe.launch', 'UT Probe'),
-            ('uwrov', 'sonar.launch', 'Sonar'),
-            ('oven_media_recoder', 'recorder.launch', 'Camera'),
-            ('heading_depth_sender', 'sender.launch', 'Auto Mode'),
-            ('open_cpn_connector', 'open_cpn_connector.launch', 'OpenCPN'),
+            ('start', 'rov.launch', 'Main Connection'),
+            ('start', 'joystick_controller.launch', 'Joystick'),
+            ('start', 'reach_alpha.launch', 'Master Arm'),
+            ('start', 'launch_dvl.launch', 'DVL'),
+            ('start', 'usbl_ros.launch', 'USBL'),
+            ('start', 'ut_probe.launch', 'UT Probe'),
+            ('start', 'sonar.launch', 'Sonar'),
+            ('start', 'recorder.launch', 'Camera'),
+            ('start', 'sender.launch', 'Auto Mode'),
+            ('start', 'open_cpn_connector.launch', 'OpenCPN'),
         ]
 
         self.app_launches = [
@@ -90,17 +90,17 @@ class RosLaunchApp(QWidget):
         #
         # layout.addWidget(label)
 
-        for i, (package_name, launch_file_name) in enumerate(self.app_launches):
-            h_box = QHBoxLayout()
-            # name_label = QLabel(package_name)
-            action_button = QPushButton(f'Start {package_name}', self)
-            action_button.clicked.connect(
-                lambda _, package=package_name, launch=launch_file_name: self.toggle_app_launch(package, launch))
-
-            # h_box.addWidget(name_label)
-            h_box.addWidget(action_button)
-            main_layout.addLayout(h_box)
-            self.buttons_main[f'Start {package_name}'] = action_button
+        # for i, (package_name, launch_file_name) in enumerate(self.app_launches):
+        #     h_box = QHBoxLayout()
+        #     # name_label = QLabel(package_name)
+        #     action_button = QPushButton(f'Start {package_name}', self)
+        #     action_button.clicked.connect(
+        #         lambda _, package=package_name, launch=launch_file_name: self.toggle_app_launch(package, launch))
+        #
+        #     # h_box.addWidget(name_label)
+        #     h_box.addWidget(action_button)
+        #     main_layout.addLayout(h_box)
+        #     self.buttons_main[f'Start {package_name}'] = action_button
 
         # Add tabs and insert the buttons into the tabs
         tab_widget.addTab(QWidget(), 'Main')  # Add the main tab
@@ -167,7 +167,7 @@ class RosLaunchApp(QWidget):
             return
 
         # Construct the roslaunch command
-        roslaunch_cmd = f"roslaunch {launch_file_path}"
+        roslaunch_cmd = f"{launch_file_path}"
 
         # Use subprocess.Popen to start the roslaunch process and retrieve its PID
         try:
