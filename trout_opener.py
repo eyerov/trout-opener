@@ -14,7 +14,7 @@ class RosLaunchApp(QWidget):
         super().__init__()
 
         self.toggle_all_button = None
-        self.start_roscore()
+        # self.start_roscore()
 
         self.launch_processes = {}  # Dictionary to store process objects
         self.buttons_main = {}  # Dictionary to store buttons
@@ -22,16 +22,10 @@ class RosLaunchApp(QWidget):
 
         # Define launch file information as a list of tuples (package_name, launch_file_name)
         self.launch_files = [
-            ('start', 'rov.launch', 'Main Connection'),
-            ('start', 'joystick_controller.launch', 'Joystick'),
-            ('start', 'reach_alpha.launch', 'Master Arm'),
-            ('start', 'launch_dvl.launch', 'DVL'),
-            ('start', 'usbl_ros.launch', 'USBL'),
-            ('start', 'ut_probe.launch', 'UT Probe'),
-            ('start', 'sonar.launch', 'Sonar'),
+            ('start', '"C:\Program Files (x86)\iVMS-4200 Site\iVMS-4200 Client\Client\iVMS-4200.Framework.C.exe"', 'Camera'),
+            ('start', r'"C:\Program Files (x86)\Blueprint Subsea\SeaTrac PinPoint\PinPoint.exe"', 'USBL'),
+            ('start', '"C:\Program Files (x86)\Oculus ViewPoint\OculusSonar.exe"', 'Sonar'),
             ('start', 'recorder.launch', 'Camera'),
-            ('start', 'sender.launch', 'Auto Mode'),
-            ('start', 'open_cpn_connector.launch', 'OpenCPN'),
         ]
 
         self.app_launches = [
@@ -40,26 +34,6 @@ class RosLaunchApp(QWidget):
         ]
 
         self.init_ui()
-
-    def start_roscore(self):
-        # Start roscore if it's not already running
-        try:
-            self.roscore_process = subprocess.Popen(['roscore'])
-            print("roscore started successfully.")
-        except Exception as e:
-            print(f"Error starting roscore: {e}")
-
-    def stop_roscore(self):
-        # Terminate the roscore process
-        if hasattr(self, 'roscore_process') and self.roscore_process.poll() is None:
-            try:
-                pid = self.roscore_process.pid
-                process = psutil.Process(pid)
-                process.terminate()
-                self.roscore_process.wait()
-                print("roscore terminated successfully.")
-            except Exception as e:
-                print(f"Error stopping roscore: {e}")
 
     def init_ui(self):
         tab_widget = QTabWidget()
@@ -78,7 +52,7 @@ class RosLaunchApp(QWidget):
             # name_label = QLabel(name)
             action_button = QPushButton(f'Start {name}', self)
             action_button.clicked.connect(
-                lambda _, package=package_name, launch=launch_file_name: self.toggle_ros_launch(package, launch, name))
+                lambda _, package=package_name, launch=launch_file_name, l_name = name: self.toggle_ros_launch(package, launch, l_name))
 
             # h_box.addWidget(name_label)
             h_box.addWidget(action_button)
@@ -138,7 +112,7 @@ class RosLaunchApp(QWidget):
             self.toggle_all_button.setText('Start ROV')
 
     def toggle_ros_launch(self, package_name, launch_file_name, name):
-        launch_file_path = f"{package_name} {launch_file_name}"
+        launch_file_path = f"{launch_file_name}"
 
         if launch_file_path in self.launch_processes and self.launch_processes[launch_file_path].poll() is None:
             # If the process is running, stop it
@@ -158,7 +132,7 @@ class RosLaunchApp(QWidget):
             self.start_app_launch(package_name, launch_file_name)
 
     def start_ros_launch(self, package_name, launch_file_name, name):
-        launch_file_path = f"{package_name} {launch_file_name}"
+        launch_file_path = f"{launch_file_name}"
 
         print(f"Starting : {launch_file_path}")
 
@@ -171,8 +145,9 @@ class RosLaunchApp(QWidget):
 
         # Use subprocess.Popen to start the roslaunch process and retrieve its PID
         try:
-            process = subprocess.Popen(roslaunch_cmd, shell=True)
+            process = subprocess.Popen(roslaunch_cmd, shell=False)
             self.launch_processes[launch_file_path] = process
+            print("Started")
             self.update_button_text(package_name, launch_file_name, name, is_running=True)
         except Exception as e:
             print(f"Error starting ROS Launch file {launch_file_path}: {e}")
@@ -200,7 +175,7 @@ class RosLaunchApp(QWidget):
             print(f"Error starting App file {launch_file_path}: {e}")
 
     def stop_ros_launch(self, package_name, launch_file_name, name):
-        launch_file_path = f"{package_name} {launch_file_name}"
+        launch_file_path = f"{launch_file_name}"
 
         if launch_file_path in self.launch_processes and self.launch_processes[launch_file_path].poll() is None:
             try:
@@ -208,7 +183,7 @@ class RosLaunchApp(QWidget):
                 pid = self.launch_processes[launch_file_path].pid
 
                 # Terminate the process using psutil
-                process = psutil.Process(pid + 1)
+                process = psutil.Process(pid)
                 process.terminate()
 
                 # Wait for the process to finish
@@ -242,10 +217,11 @@ class RosLaunchApp(QWidget):
             self.update_app_button_text(package_name, launch_file_name, is_running=False)
 
     def update_button_text(self, package_name, launch_file_name, name, is_running):
-        launch_file_path = f"{package_name} {launch_file_name}"
+        launch_file_path = f"{launch_file_name}"
         button_key = f'Start {name}'
 
         button = self.buttons_payload.get(button_key)
+        print(name)
 
         if button:
             if is_running:
@@ -272,7 +248,7 @@ class RosLaunchApp(QWidget):
 
     def closeEvent(self, event):
         # Override the closeEvent method to stop roscore when the application is closed
-        self.stop_roscore()
+        # self.stop_roscore()
         event.accept()
 
 
