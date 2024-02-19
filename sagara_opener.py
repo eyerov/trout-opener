@@ -1,3 +1,4 @@
+import ctypes
 import sys
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QVBoxLayout, QLabel, \
     QHBoxLayout, QSystemTrayIcon, QTabWidget
@@ -22,10 +23,14 @@ class RosLaunchApp(QWidget):
 
         # Define launch file information as a list of tuples (package_name, launch_file_name)
         self.launch_files = [
-            ('start', '"C:\Program Files (x86)\iVMS-4200 Site\iVMS-4200 Client\Client\iVMS-4200.Framework.C.exe"', 'Camera'),
+            ('start', r'"C:\Users\Intel NUC\Desktop\vhui64.exe"', 'Virtual Here'),
             ('start', r'"C:\Program Files (x86)\Blueprint Subsea\SeaTrac PinPoint\PinPoint.exe"', 'USBL'),
-            ('start', '"C:\Program Files (x86)\Oculus ViewPoint\OculusSonar.exe"', 'Sonar'),
-            ('start', 'recorder.launch', 'Camera'),
+            ('start', r'"C:\Program Files (x86)\Oculus ViewPoint\OculusSonar.exe"', 'Imaging Sonar'),
+            ('start', r'"C:\Users\Intel NUC\Desktop\PipeSonarL_v1020.exe"', 'Profiling Sonar'),
+            ('start', r'"C:\Program Files (x86)\iVMS-4200 Site\iVMS-4200 Client\Client\iVMS-4200.Framework.C.exe"',
+             'Camera'),
+            ('start', r'"C:\Program Files\QGroundControl\QGroundControl.exe"', 'ROV Control'),
+            ('start', r'"C:\Windows\explorer.exe" , "shell:appsFolder\Microsoft.WindowsSoundRecorder_8wekyb3d8bbwe!App"', 'Recorder'),
         ]
 
         self.app_launches = [
@@ -52,7 +57,9 @@ class RosLaunchApp(QWidget):
             # name_label = QLabel(name)
             action_button = QPushButton(f'Start {name}', self)
             action_button.clicked.connect(
-                lambda _, package=package_name, launch=launch_file_name, l_name = name: self.toggle_ros_launch(package, launch, l_name))
+                lambda _, package=package_name, launch=launch_file_name, l_name=name: self.toggle_ros_launch(package,
+                                                                                                             launch,
+                                                                                                             l_name))
 
             # h_box.addWidget(name_label)
             h_box.addWidget(action_button)
@@ -60,9 +67,10 @@ class RosLaunchApp(QWidget):
             payload_layout.addLayout(h_box)
             self.buttons_payload[f'Start {name}'] = action_button
 
-        # label = QLabel("Apps:")
-        #
-        # layout.addWidget(label)
+        if self.is_admin() == False:
+            label = QLabel("Please run as Administrator")
+            #
+            main_layout.addWidget(label)
 
         # for i, (package_name, launch_file_name) in enumerate(self.app_launches):
         #     h_box = QHBoxLayout()
@@ -89,15 +97,21 @@ class RosLaunchApp(QWidget):
         main_layout.addWidget(tab_widget)  # Add the tab widget to the main layout
 
         self.setLayout(main_layout)  # Set the main widget layout
-        self.setWindowTitle('EyeROV Trout Opener')
+        self.setWindowTitle('EyeROV Sagara Opener')
 
         icon_path = 'icon.png'
         tray_icon = QSystemTrayIcon(QIcon(icon_path), self)
         self.setWindowIcon(QIcon(icon_path))
-        tray_icon.setToolTip('EyeROV Trout Opener')
+        tray_icon.setToolTip('EyeROV Sagara Opener')
         tray_icon.show()
 
         self.show()
+
+    def is_admin(self):
+        try:
+            return ctypes.windll.shell32.IsUserAnAdmin()
+        except:
+            return False
 
     def toggle_all_ros_nodes(self):
         if self.toggle_all_button.text() == 'Start ROV':
@@ -135,6 +149,10 @@ class RosLaunchApp(QWidget):
         launch_file_path = f"{launch_file_name}"
 
         print(f"Starting : {launch_file_path}")
+        launch_data = launch_file_path.split(",")
+        launch_data = [item.replace('"', '').strip() for item in launch_data]
+
+        print(launch_data)
 
         if launch_file_path in self.launch_processes and self.launch_processes[launch_file_path].poll() is None:
             print(f"ROS Launch file {launch_file_path} is already running.")
@@ -145,7 +163,7 @@ class RosLaunchApp(QWidget):
 
         # Use subprocess.Popen to start the roslaunch process and retrieve its PID
         try:
-            process = subprocess.Popen(roslaunch_cmd, shell=False)
+            process = subprocess.Popen(launch_data, shell=False)
             self.launch_processes[launch_file_path] = process
             print("Started")
             self.update_button_text(package_name, launch_file_name, name, is_running=True)
