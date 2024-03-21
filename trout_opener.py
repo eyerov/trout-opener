@@ -29,8 +29,9 @@ class RosLaunchApp(QWidget):
             ('waterlinked_a50_ros_driver', 'launch_dvl.launch', 'DVL'),
             ('usbl_ros', 'usbl_ros.launch', 'USBL'),
             ('ut_data_extractor', 'ut_probe.launch', 'UT Probe'),
-            ('uwrov', 'sonar.launch', 'Sonar'),
-            ('oven_media_recoder', 'recorder.launch', 'Camera'),
+            # ('uwrov', 'sonar.launch', 'Sonar'),
+            ('camera_controller', 'camera_controller.launch', 'Camera'),
+            # ('oven_media_recoder', 'recorder.launch', 'Camera'),
             ('heading_depth_sender', 'sender.launch', 'Auto Mode'),
             ('open_cpn_connector', 'open_cpn_connector.launch', 'OpenCPN'),
         ]
@@ -169,7 +170,7 @@ class RosLaunchApp(QWidget):
 
         # Construct the roslaunch command
         roslaunch_cmd = f"roslaunch {launch_file_path}"
-        print(f"Started button: {name}")
+        # print(f"Started button: {name}")
 
         # Use subprocess.Popen to start the roslaunch process and retrieve its PID
         try:
@@ -244,7 +245,7 @@ class RosLaunchApp(QWidget):
             self.update_app_button_text(package_name, launch_file_name, is_running=False)
 
     def update_button_text(self, package_name, launch_file_name, name, is_running):
-        print(name)
+        # print(name)
 
         launch_file_path = f"{package_name} {launch_file_name}"
         button_key = f'Start {name}'

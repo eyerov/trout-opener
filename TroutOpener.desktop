@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=EyeROV TROUT Opener
+Comment=Unipro UGENE is a cross-platform visual environment for DNA and protein sequence analysis.
+Exec=/home/rnd/workspace/trout_opener/opener.sh
+Path=/home/rnd/workspace/trout_opener
+Terminal=true
+Type=Application
+Categories=Utility;Development;
